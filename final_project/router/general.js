@@ -4,9 +4,33 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+const checkUser = (newuser) => {
+    if (users.length == 0) return true;
+    else {
+        let flag = true
+        users.forEach( (user)=> {
+            if(user.username == newuser.username && user.password ==user.password){
+                flag = false;
+            }
+        });
+        return flag;
+    }
+};
 
 public_users.post("/register", (req,res) => {
   //Write your code here
+  let temp_user = {"username":req.query.username,"password":req.query.password}
+  if(req.query.username === "" || req.query.password === "") {
+    res.send({message: "Please provide valid username and password"})
+  }
+  
+  if (checkUser(temp_user)){
+    users.push(temp_user);
+    res.send({message: "User has been successfully added. Current users are:" + users.map(user => user.username)});
+  } else {
+      res.send({message:"User already exists"})
+  }
+  
   //return res.status(300).json({message: "Yet to be implemented"});
 });
 
