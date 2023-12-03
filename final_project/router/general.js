@@ -28,7 +28,7 @@ public_users.post("/register", (req,res) => {
     users.push(temp_user);
     res.send({message: "User has been successfully added. Current users are:" + users.map(user => user.username)});
   } else {
-      res.send({message:"User already exists"})
+      res.send({message:"User already exists. Current users are:" + users.map(user => user.username)})
   }
   
   //return res.status(300).json({message: "Yet to be implemented"});
