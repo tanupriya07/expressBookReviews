@@ -81,7 +81,6 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
             // Review found, update it
             books[req.params.isbn]["reviews"][review_user] = new_review;
             review_flag = false;
-            //res.send({message: books[req.params.isbn]["reviews"]})
             let reviewMessages = [];
             Object.entries(books[req.params.isbn]["reviews"]).forEach(([user, review]) => {
                 reviewMessages.push(`User: ${user}, Review: ${review.review}`);
@@ -93,7 +92,6 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     if (review_flag) {
         // Review not found, add it
         Object.assign(books[req.params.isbn]["reviews"],{[current_user] : new_review});
-        //res.send({message: books[req.params.isbn]["reviews"]})
         let reviewMessages = [];
         Object.entries(books[req.params.isbn]["reviews"]).forEach(([user, review]) => {
             reviewMessages.push(`User: ${user}, Review: ${review.review}`);
@@ -102,8 +100,31 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     }
   }
   
-  //return res.status(300).json({message: "Yet to be implemented"});
 });
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    let current_user = req.session.authorization['username'];
+    if(isEmpty(books[req.params.isbn]["reviews"])){
+        res.send({message: "Review for book "+books[req.params.isbn]["title"]+ " doesn't exist"})
+    }
+    let review_flag = true;
+    Object.keys(books[req.params.isbn]["reviews"]).forEach(review_user => {
+        if(review_user == current_user){
+            // Review found, update it
+            delete books[req.params.isbn]["reviews"][review_user];
+            review_flag = false;
+            let reviewMessages = [];
+            Object.entries(books[req.params.isbn]["reviews"]).forEach(([user, review]) => {
+                reviewMessages.push(`User: ${user}, Review: ${review.review}`);
+            });
+            res.send({message: "Book review deleted. Reviews for book" + books[req.params.isbn]["title"] + " are: \n"+ reviewMessages});
+        }
+    });
+    if(review_flag){
+        res.send({message: "Review of current user for book "+books[req.params.isbn]["title"]+ " doesn't exist"})
+    }
+});
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
