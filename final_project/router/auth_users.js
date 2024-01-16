@@ -62,32 +62,43 @@ let displayReviews = (reviews) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
-  let current_user = req.session.authorization["username"];
+  let current_user = req.session.authorization['username'];
   let new_review = {"review":req.query.review};
   if(isEmpty(books[req.params.isbn]["reviews"])){
       //review successfully added
       
       Object.assign(books[req.params.isbn]["reviews"],{[current_user] : new_review});
-      res.send({message: books[req.params.isbn]["reviews"]})
-      //res.send({message: "Book review added. Reviews for book: " + books[req.params.isbn]["title"] + " are: "+ displayReviews(books[req.params.isbn]["reviews"])})
-  } else {
+      let reviewMessages = [];
+        Object.entries(books[req.params.isbn]["reviews"]).forEach(([user, review]) => {
+            reviewMessages.push(`User: ${user}, Review: ${review.review}`);
+        });
+        res.send({message: "Book review added. Reviews for book" + books[req.params.isbn]["title"] + " are: \n"+ reviewMessages})
+    } else {
     let review_flag = true;
     //const bookReviews = books[req.params.isbn]["reviews"];
     Object.keys(books[req.params.isbn]["reviews"]).forEach(review_user => {
-        //res.send(review_user)
         if(review_user == current_user){
             // Review found, update it
-            review_user = new_review;
+            books[req.params.isbn]["reviews"][review_user] = new_review;
             review_flag = false;
-            res.send({message: "Book review updated. Reviews for book" + books[req.params.isbn]["title"] + " are: "+ Object.entries(books[req.params.isbn]["reviews"]).forEach((user) => "user: "+user + "Review: "+user.review)});
+            //res.send({message: books[req.params.isbn]["reviews"]})
+            let reviewMessages = [];
+            Object.entries(books[req.params.isbn]["reviews"]).forEach(([user, review]) => {
+                reviewMessages.push(`User: ${user}, Review: ${review.review}`);
+            });
+            res.send({message: "Book review updated. Reviews for book" + books[req.params.isbn]["title"] + " are: \n"+ reviewMessages});
         }
     });
 
     if (review_flag) {
         // Review not found, add it
-        Object.assign(books[req.params.isbn]["reviews"],{current_user : new_review});
-        res.send({message: books[req.params.isbn]["reviews"]})
-        res.send({message: "Book review added. Reviews for book" + books[req.params.isbn]["title"] + " are: "+ Object.entries(books[req.params.isbn]["reviews"]).forEach((user) => "user: "+user + "Review: "+user.review)})
+        Object.assign(books[req.params.isbn]["reviews"],{[current_user] : new_review});
+        //res.send({message: books[req.params.isbn]["reviews"]})
+        let reviewMessages = [];
+        Object.entries(books[req.params.isbn]["reviews"]).forEach(([user, review]) => {
+            reviewMessages.push(`User: ${user}, Review: ${review.review}`);
+        });
+        res.send({message: "Book review added. Reviews for book" + books[req.params.isbn]["title"] + " are: \n"+ reviewMessages})
     }
   }
   
